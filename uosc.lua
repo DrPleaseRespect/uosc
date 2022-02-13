@@ -1,6 +1,7 @@
 --[[
 
 uosc 2.15.1 - 2022-Feb-12 | https://github.com/darsain/uosc
+Forked by DrPleaseRespect
 
 Minimalist cursor proximity based UI for MPV player.
 
@@ -295,11 +296,12 @@ local options = {
 	subtitle_types = 'aqt,gsub,jss,sub,ttxt,pjs,psb,rt,smi,slt,ssf,srt,ssa,ass,usf,idx,vt',
 	font_height_to_letter_width_ratio = 0.5,
 	chapter_ranges = '^op| op$|opening<968638:0.5>.*, ^ed| ed$|^end|ending$<968638:0.5>.*|{eof}, sponsor start<3535a5:.5>sponsor end, segment start<3535a5:0.5>segment end',
+	font = mp.get_property('options/osd-font')
 }
 opt.read_options(options, 'uosc')
 local config = {
 	render_delay = 0.03, -- sets max rendering frequency
-	font = mp.get_property('options/osd-font'),
+	font = options.font,
 	menu_parent_opacity = 0.4,
 	menu_min_width = 260
 }
