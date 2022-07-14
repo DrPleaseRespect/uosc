@@ -3435,13 +3435,20 @@ mp.add_key_binding(nil, 'stream-quality', function()
 	local active_item = nil
 	local formats = {}
 
+	-- Add Resolutions from stream_quality_options
 	for index, height in ipairs(options.stream_quality_options) do
 		local format = 'bestvideo[height<=?'..height..']+bestaudio/best[height<=?'..height..']'
 		formats[#formats + 1] = {
 			title = height..'p',
 			value = format
 		}
-		if format == ytdl_format then active_item = index end
+	end
+
+	-- Custom Formats
+	formats[#formats + 1] = {title = "Audio Only", value = 'bestaudio'}
+
+	for index, format in ipairs(formats) do
+		if format["value"] == ytdl_format then active_item = index end
 	end
 
 	menu:open(formats, function(format)
