@@ -3837,7 +3837,7 @@ mp.add_key_binding(nil, 'stream-quality', function()
 	formats[#formats + 1] = {title = "Audio Only", value = 'bestaudio'}
 
 	for index, format in ipairs(formats) do
-		if format["value"] == ytdl_format then active_item = index end
+		if format["value"] == ytdl_format then active_index = index end
 	end
 
 	menu:open(formats, function(format)
