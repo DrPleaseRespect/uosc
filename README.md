@@ -36,8 +36,8 @@ Most notable features:
 
 #### Development (unstable, might be broken)
 
--   [`uosc.lua`](https://raw.githubusercontent.com/tomasklaen/uosc/master/uosc.lua)
--   [`uosc.conf`](https://raw.githubusercontent.com/tomasklaen/uosc/master/uosc.conf)
+-   [`uosc.lua`](https://raw.githubusercontent.com/tomasklaen/uosc/master/scripts/uosc.lua)
+-   [`uosc.conf`](https://raw.githubusercontent.com/tomasklaen/uosc/master/script-opts/uosc.conf)
 
 ## Installation
 
@@ -57,6 +57,18 @@ Most notable features:
 2. Save `uosc.lua` into `scripts/` folder.
 
 3. To configure **uosc** to your likings, create a `script-opts/uosc.conf` file, or download `uosc.conf` with all default values from one of the links above, and save into `script-opts/` folder.
+
+4. **OPTIONAL**: If the UI feels sluggish/slow while playing video, you can remedy this a lot by placing this in your `mpv.conf`:
+
+    ```config
+    video-sync=display-resample
+    ```
+
+    Though this does come at the cost of a little bit higher CPU/GPU load.
+
+    #### What is going on?
+
+    **uosc** places performance as one of its top priorities, so how can the UI feel slow? Well, it really isn't, **uosc** is **fast**, it just doesn't feel like it because when video is playing, the UI rendering frequency is chained to its frame rate, so unless you are the type of person that can't see above 24fps, it _will_ feel slow, unless you tell mpv to resample the video framerate to match your display. This is mpv limitation, and not much we can do about it on our side.
 
 ## Options
 
@@ -138,21 +150,15 @@ Case for `(flash/decide)-pause-indicator`: mpv handles frame stepping forward by
 
 Toggles menu. Menu is empty by default and won't show up when this is pressed. Read [Menu](#menu-1) section below to find out how to fill it up with items you want there.
 
-#### `load-subtitles`
+#### `subtitles`, `audio`, `video`
 
-Displays a file explorer with directory navigation to load external subtitles. Explorer only displays file types defined in `subtitle_types` option.
+Menus to select a track of a requested type.
 
-#### `subtitles`
+#### `load-subtitles`, `load-audio`, `load-video`
 
-Menu to select a subtitle track.
+Displays a file explorer with directory navigation to load a requested track type.
 
-#### `audio`
-
-Menu to select an audio track.
-
-#### `video`
-
-Menu to select a video track.
+For subtitles, explorer only displays file types defined in `subtitle_types` option.
 
 #### `playlist`
 
@@ -169,6 +175,10 @@ Switch stream quality. This is just a basic re-assignment of `ytdl-format` mpv p
 #### `open-file`
 
 Open file menu. Browsing starts in current file directory, or user directory when file not available.
+
+#### `items`
+
+Opens `playlist` menu when playlist exists, or `open-file` menu otherwise.
 
 #### `next`
 
@@ -216,27 +226,13 @@ Delete currently playing file and quit mpv.
 
 Show current file in your operating systems' file explorer.
 
+#### `audio-device`
+
+Switch audio output device.
+
 #### `open-config-directory`
 
 Open directory with `mpv.conf` in file explorer.
-
-## Message handlers
-
-**uosc** listens on some messages that can be sent with `script-message-to uosc` command. Example:
-
-```
-R    script-message-to uosc show-submenu "Utils > Aspect ratio"
-```
-
-#### `show-submenu <menu_id>`
-
-Opens one of the submenus defined in `input.conf` (read on how to build those below).
-
-Parameters
-
-##### `<menu_id>`
-
-ID (title) of the submenu, including `>` subsections as defined in `input.conf`. It has to be match the title exactly.
 
 ## Menu
 
@@ -330,6 +326,7 @@ alt+s       script-binding uosc/load-subtitles     #! Utils > Load subtitles
 #           set video-aspect-override "16:9"       #! Utils > Aspect ratio > 16:9
 #           set video-aspect-override "4:3"        #! Utils > Aspect ratio > 4:3
 #           set video-aspect-override "2.35:1"     #! Utils > Aspect ratio > 2.35:1
+#           script-binding uosc/audio-device       #! Utils > Audio devices
 ctrl+s      async screenshot                       #! Utils > Screenshot
 O           script-binding uosc/show-in-directory  #! Utils > Show in directory
 #           script-binding uosc/open-config-directory #! Utils > Open config directory
@@ -338,17 +335,92 @@ esc         quit #! Quit
 
 To see all the commands you can bind keys or menu items to, refer to [mpv's list of input commands documentation](https://mpv.io/manual/master/#list-of-input-commands).
 
-## Tips
+## Message handlers
 
-**uosc** places performance as one of the top priorities, so why does the UI feels a bit sluggish/slow/laggy (e.g. seeking indicator lags a bit behind cursor)? Well, it really isn't, **uosc** is **fast**, it just doesn't feel like it because when video is playing, the UI rendering frequency is chained to its frame rate, so unless you are the type of person that can't see above 24fps, it _does_ feel sluggish. This is an mpv limitation and I can't do anything about it :(
-
-You can test the smoother operation by pausing the video and then using the UI, which will make it render closer to your display refresh rate.
-
-You can remedy this a tiny bit by enabling interpolation. Add this to your `mpv.conf` file:
+**uosc** listens on some messages that can be sent with `script-message-to uosc` command. Example:
 
 ```
-interpolation=yes
-video-sync=display-resample
+R    script-message-to uosc show-submenu "Utils > Aspect ratio"
 ```
 
-Though it does come at the cost of a higher CPU/GPU load.
+### `get-version <script_id>`
+
+Tells uosc to send it's version to `<script_id>` script. Useful if you want to detect that uosc is installed. Example:
+
+```lua
+-- Register response handler
+mp.register_script_message('uosc-version', function(version)
+	print('uosc version', version)
+end)
+
+-- Ask for version
+mp.commandv('script-message-to', 'uosc', 'get-version', mp.get_script_name())
+```
+
+### `show-submenu <menu_id>`
+
+Opens one of the submenus defined in `input.conf` (read on how to build those in the Menu documentation above).
+
+Parameters
+
+##### `<menu_id>`
+
+ID (title) of the submenu, including `>` subsections as defined in `input.conf`. It has to be match the title exactly.
+
+### `show-menu <menu_json>`
+
+A message other scripts can send to display a uosc menu serialized as JSON.
+
+Menu data structure:
+
+```
+Menu {
+    type?: string;
+    title?: string;
+    selected_index?: number;
+    active_index?: number;
+    items: Item[];
+}
+
+Submenu {
+    title?: string;
+    items: Item[];
+}
+
+Item = Command | Submenu;
+
+Command {
+    title?: string;
+    hint?: string;
+    value: string | string[];
+    bold?: boolean;
+    italic?: boolean;
+    muted?: boolean;
+}
+```
+
+When command value is a string, it'll be passed to `mp.command(value)`. If it's a table (array) of strings, it'll be used as `mp.commandv(table.unpack(value))`.
+
+Menu `type` controls what happens when opening a menu when some other menu is already open. When the new menu type is different, it'll replace the currently opened menu. When it's the same, the currently open menu will simply be closed. This is used to implement toggling (open->close) of menus with the same key.
+
+`active_index` displays the item at that index as active. For example, in subtitles menu, the currently displayed subtitles are considered _active_.
+
+`selected_index` marks item at that index as selected - the starting position for all keyboard based navigation in the menu. It defaults to `active_index` if any, or `1` otherwise, which means in most cases you can just ignore this prop.
+
+Example:
+
+```lua
+local utils = require('mp.utils')
+local menu = {
+    type = 'menu_type',
+    title = 'Custom menu',
+    active_index = 1,
+    selected_index = 1,
+    items = {
+        {title = 'Foo', hint = 'foo', value = 'quit'},
+        {title = 'Bar', hint = 'bar', value = 'quit'},
+    }
+}
+local json = utils.format_json(menu)
+mp.commandv('script-message-to', 'uosc', 'show-menu', json)
+```
