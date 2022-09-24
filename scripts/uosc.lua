@@ -249,7 +249,7 @@ local config = {
 	-- sets max rendering frequency in case the
 	-- native rendering frequency could not be detected
 	render_delay = 1 / 60,
-	font = options.font
+	font = options.font,
 	media_types = split(options.media_types, ' *, *'),
 	subtitle_types = split(options.subtitle_types, ' *, *'),
 	stream_quality_options = split(options.stream_quality_options, ' *, *'),
@@ -4495,19 +4495,19 @@ mp.add_key_binding(nil, 'stream-quality', function()
 	local items = {}
 
 	-- Add Resolutions from stream_quality_options
-	for index, height in ipairs(options.stream_quality_options) do
+	for _, height in ipairs(config.stream_quality_options) do
 		local format = 'bestvideo[height<=?' .. height .. ']+bestaudio/best[height<=?' .. height .. ']'
-		formats[#formats + 1] = {
+		items[#items + 1] = {
 			title = height .. 'p',
 			value = format,
 		}
 	end
 
 	-- Custom Formats
-	formats[#formats + 1] = {title = "Audio Only", value = 'bestaudio'}
+	items[#items + 1] = {title = "Audio Only", value = 'bestaudio'}
 
-	for index, format in ipairs(formats) do
-		if format["value"] == ytdl_format then active_index = index end
+	for _, item in ipairs(items) do
+		item["active"] = item['value'] == ytdl_format
 	end
 
 	Menu:open({type = 'stream-quality', title = 'Stream quality', items = items}, function(format)
