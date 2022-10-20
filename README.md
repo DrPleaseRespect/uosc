@@ -1,10 +1,10 @@
 <div align="center">
-	<a href="https://user-images.githubusercontent.com/47283320/192066616-4a51b114-4383-437d-9124-03f4d9937427.webm"><img src="https://user-images.githubusercontent.com/47283320/192086463-e74c1380-d499-4329-8722-092742bc841e.png" alt="Preview screenshot"></a>
 	<h1>uosc</h1>
 	<p>
 		Feature-rich minimalist proximity-based UI for <a href="https://mpv.io">MPV player</a>.
 	</p>
-	<br>
+	<br/>
+	<a href="https://user-images.githubusercontent.com/47283320/195073006-bfa72bcc-89d2-4dc7-b8dc-f3c13273910c.webm"><img src="https://user-images.githubusercontent.com/47283320/195072935-44d591d9-00bb-4a55-8795-9cf81f65d397.png" alt="Preview screenshot"></a>
 </div>
 
 Most notable features:
@@ -107,17 +107,35 @@ Available commands:
 
 Makes the whole UI visible until you call this command again. Useful for peeking remaining time and such while watching.
 
-You can also peek only a specific element with `toggle-{element}` command.
+There's also a `toggle-elements <ids>` message you can send to toggle one or more specific elements by specifying their names separated by comma:
 
-`{element}` can be one of: `timeline`, `controls`, `volume`, `top-bar`
+```
+script-message-to uosc toggle-elements timeline,speed
+```
+
+Available element IDs: `timeline`, `controls`, `volume`, `top_bar`, `speed`
+
+Under the hood, `toggle-ui` is using `toggle-elements`, and that is in turn using the `set-min-visibility <visibility> [<ids>]` message. `<visibility>` is a `0-1` floating point. Leave out `<ids>` to set it for all elements.
 
 #### `toggle-progress`
 
 Toggles the always visible portion of the timeline. You can look at it as switching `timeline_size_min` option between it's configured value and 0.
 
-#### `flash-{element}`
+#### `flash-ui`
 
-Commands to briefly flash a specified element. Available: `flash-timeline`, `flash-top-bar`, `flash-volume`, `flash-speed`, `flash-pause-indicator`, `decide-pause-indicator`
+Command(s) to briefly flash the whole UI. Elements are revealed for a second and then fade away.
+
+To flash individual elements, you can use: `flash-timeline`, `flash-top-bar`, `flash-volume`, `flash-speed`, `flash-pause-indicator`, `decide-pause-indicator`
+
+There's also a `flash-elements <ids>` message you can use to flash one or more specific elements. Example:
+
+```
+script-message-to uosc flash-elements timeline,speed
+```
+
+Available element IDs: `timeline`, `controls`, `volume`, `top_bar`, `speed`, `pause_indicator`
+
+This is useful in combination with other commands that modify values represented by flashed elements, for example: flashing volume element when changing the volume.
 
 You can use it in your bindings like so:
 
@@ -133,11 +151,11 @@ down         add volume -10; script-binding uosc/flash-volume
 [            add speed -0.25; script-binding uosc/flash-speed
 ]            add speed  0.25; script-binding uosc/flash-speed
 \            set speed 1; script-binding uosc/flash-speed
->            script-binding uosc/next; script-binding uosc/flash-top-bar; script-binding uosc/flash-timeline
-<            script-binding uosc/prev; script-binding uosc/flash-top-bar; script-binding uosc/flash-timeline
+>            script-binding uosc/next; script-message-to uosc flash-elements top_bar,timeline
+<            script-binding uosc/prev; script-message-to uosc flash-elements top_bar,timeline
 ```
 
-Case for `(flash/decide)-pause-indicator`: mpv handles frame stepping forward by briefly resuming the video, which causes pause indicator to flash, and none likes that when they are trying to compare frames. The solution is to enable manual pause indicator (`pause_indicator=manual`) and use `flash-pause-indicator` (for a brief flash) or `decide-pause-indicator` (for a static indicator) as a secondary command to all bindings you wish would display it (see space binding example above).
+Case for `(flash/decide)-pause-indicator`: mpv handles frame stepping forward by briefly resuming the video, which causes pause indicator to flash, and none likes that when they are trying to compare frames. The solution is to enable manual pause indicator (`pause_indicator=manual`) and use `flash-pause-indicator` (for a brief flash) or `decide-pause-indicator` (for a static indicator) as a secondary command to appropriate bindings.
 
 #### `menu`
 
@@ -163,6 +181,10 @@ Playlist navigation.
 
 Chapter navigation.
 
+#### `editions`
+
+Editions menu. Editions are different video cuts available in some mkv files.
+
 #### `stream-quality`
 
 Switch stream quality. This is just a basic re-assignment of `ytdl-format` mpv property from predefined options (configurable with `stream_quality_options`) and video reload, there is no fetching of available formats going on.
@@ -175,37 +197,21 @@ Open file menu. Browsing starts in current file directory, or user directory whe
 
 Opens `playlist` menu when playlist exists, or `open-file` menu otherwise.
 
-#### `next`
+#### `next`, `prev`
 
-Open next item in playlist, or file in current directory when there is no playlist.
+Open next/previous item in playlist, or file in current directory when there is no playlist. Enable `loop-playlist` to loop around.
 
-#### `prev`
+#### `first`, `last`
 
-Open previous item in playlist, or file in current directory when there is no playlist.
+Open first/last item in playlist, or file in current directory when there is no playlist.
 
-#### `first`
+#### `next-file`, `prev-file`
 
-Open first item in playlist, or file in current directory when there is no playlist.
+Open next/prev file in current directory. Enable `loop-playlist` to loop around
 
-#### `last`
+#### `first-file`, `last-file`
 
-Open last item in playlist, or file in current directory when there is no playlist.
-
-#### `next-file`
-
-Open next file in current directory. Set `directory_navigation_loops=yes` to open first file when at the end.
-
-#### `prev-file`
-
-Open previous file in current directory. Set `directory_navigation_loops=yes` to open last file when at the start.
-
-#### `first-file`
-
-Open first file in current directory.
-
-#### `last-file`
-
-Open last file in current directory.
+Open first/last file in current directory.
 
 #### `delete-file-next`
 
@@ -300,28 +306,28 @@ Define a folder without defining any of its contents:
 
 Example context menu:
 
-This is the default pre-configured menu if none is defined in your `input.conf`, but with added shortcuts.
+This is the default pre-configured menu if none is defined in your `input.conf`, but with added shortcuts. To both pause & move the window with left mouse button, so that you can have the menu on the right one, enable `click_threshold` in `uosc.conf` (see default `uosc.conf` for example/docs).
 
 ```
 menu        script-binding uosc/menu
 mbtn_right  script-binding uosc/menu
-o           script-binding uosc/open-file          #! Open file
-P           script-binding uosc/playlist           #! Playlist
-C           script-binding uosc/chapters           #! Chapters
-S           script-binding uosc/subtitles          #! Subtitle tracks
-A           script-binding uosc/audio              #! Audio tracks
+s           script-binding uosc/subtitles          #! Subtitles
+a           script-binding uosc/audio              #! Audio tracks
 q           script-binding uosc/stream-quality     #! Stream quality
+p           script-binding uosc/items              #! Playlist
+c           script-binding uosc/chapters           #! Chapters
 >           script-binding uosc/next               #! Navigation > Next
 <           script-binding uosc/prev               #! Navigation > Prev
 alt+>       script-binding uosc/delete-file-next   #! Navigation > Delete file & Next
 alt+<       script-binding uosc/delete-file-prev   #! Navigation > Delete file & Prev
 alt+esc     script-binding uosc/delete-file-quit   #! Navigation > Delete file & Quit
-alt+s       script-binding uosc/load-subtitles     #! Utils > Load subtitles
+o           script-binding uosc/open-file          #! Navigation > Open file
 #           set video-aspect-override "-1"         #! Utils > Aspect ratio > Default
 #           set video-aspect-override "16:9"       #! Utils > Aspect ratio > 16:9
 #           set video-aspect-override "4:3"        #! Utils > Aspect ratio > 4:3
 #           set video-aspect-override "2.35:1"     #! Utils > Aspect ratio > 2.35:1
 #           script-binding uosc/audio-device       #! Utils > Audio devices
+#           script-binding uosc/editions           #! Utils > Editions
 ctrl+s      async screenshot                       #! Utils > Screenshot
 O           script-binding uosc/show-in-directory  #! Utils > Show in directory
 #           script-binding uosc/open-config-directory #! Utils > Open config directory
@@ -502,6 +508,42 @@ end)
 mp.register_script_message('submit', function(prop, value)
   -- Do something with state
 end)
+```
+
+### `set <prop> <value>`
+
+Tell **uosc** to set an external property to this value. Currently, this is only used to set/display control button active state and badges:
+
+In your script, set the value of `foo` to `1`.
+
+```lua
+mp.commandv('script-message-to', 'uosc', 'set', 'foo', 1)
+```
+
+`foo` can now be used as a `toggle` or `cycle` property by specifying its owner with a `@{script_name}` suffix:
+
+```
+toggle:icon_name:foo@script_name
+cycle:icon_name:foo@script_name:no/yes!
+```
+
+If user clicks this `toggle` or `cycle` button, uosc will send a `set` message back to the script owner. You can then listen to this message, do what you need with the new value, and update uosc state accordingly:
+
+```lua
+-- Send initial value so that the button has a correct active state
+mp.commandv('script-message-to', 'uosc', 'set', 'foo', 'yes')
+-- Listen for changes coming from `toggle` or `cycle` button
+mp.register_script_message('set', function(prop, value)
+    -- ... do something with `value`
+    -- Update uosc external prop
+    mp.commandv('script-message-to', 'uosc', 'set', 'foo', value)
+end)
+```
+
+External properties can also be used as control button badges:
+
+```
+controls=command:icon_name:command_name#foo@script_name?My foo button
 ```
 
 ## Why _uosc_?
