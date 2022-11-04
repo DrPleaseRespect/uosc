@@ -1,4 +1,11 @@
 {
+	"editor.insertSpaces": false,
+	"editor.tabSize": 4,
+	"Lua.runtime.path": [
+		"?.lua",
+		"?/init.lua",
+		"scripts/?.lua"
+	],
 	"Lua.diagnostics.disable": [
 		"lowercase-global",
 		"redefined-local"
@@ -10,9 +17,12 @@
 		"alac",
 		"apng",
 		"autoload",
+		"autorenew",
 		"bestaudio",
 		"bestvideo",
+		"Bopomofo",
 		"demux",
+		"doubleclick",
 		"gfps",
 		"hidpi",
 		"jfif",
@@ -22,6 +32,7 @@
 		"rrggbb",
 		"rrggbbaa",
 		"samplerate",
+		"sponsorblock",
 		"thumbfast",
 		"ytdl",
 		"ZWNBSP"

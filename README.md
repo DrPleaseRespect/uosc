@@ -145,12 +145,12 @@ right        seek  5
 left         seek -5
 shift+right  seek  30; script-binding uosc/flash-timeline
 shift+left   seek -30; script-binding uosc/flash-timeline
-m            cycle mute; script-binding uosc/flash-volume
-up           add volume  10; script-binding uosc/flash-volume
-down         add volume -10; script-binding uosc/flash-volume
-[            add speed -0.25; script-binding uosc/flash-speed
-]            add speed  0.25; script-binding uosc/flash-speed
-\            set speed 1; script-binding uosc/flash-speed
+m            no-osd cycle mute; script-binding uosc/flash-volume
+up           no-osd add volume  10; script-binding uosc/flash-volume
+down         no-osd add volume -10; script-binding uosc/flash-volume
+[            no-osd add speed -0.25; script-binding uosc/flash-speed
+]            no-osd add speed  0.25; script-binding uosc/flash-speed
+\            no-osd set speed 1; script-binding uosc/flash-speed
 >            script-binding uosc/next; script-message-to uosc flash-elements top_bar,timeline
 <            script-binding uosc/prev; script-message-to uosc flash-elements top_bar,timeline
 ```
@@ -409,7 +409,8 @@ When command value is a string, it'll be passed to `mp.command(value)`. If it's 
 
 Menu `type` controls what happens when opening a menu when some other menu is already open. When the new menu type is different, it'll replace the currently opened menu. When it's the same, the currently open menu will simply be closed. This is used to implement toggling of menus with the same type.
 
-`item.icon` property accepts icon names. You can pick one from here: [Google Material Icons](https://fonts.google.com/icons?selected=Material+Icons)
+`item.icon` property accepts icon names. You can pick one from here: [Google Material Icons](https://fonts.google.com/icons?selected=Material+Icons)\
+There is also a special icon name `spinner` which will display a rotating spinner. Along with a no-op command on an item and `keep_open=true`, this can be used to display placeholder menus/items that are still loading.
 
 When `keep_open` is `true`, activating the item will not close the menu. This property can be defined on both menus and items, and is inherited from parent to child if child doesn't overwrite it.
 
