@@ -81,7 +81,7 @@ end
 function Updater:open_changelog()
 	if self.state == 'pending' then return end
 
-	local url = 'https://github.com/tomasklaen/uosc/releases'
+	local url = 'https://github.com/drpleaserespect/uosc/releases'
 
 	self:append_output('Opening URL: ' .. url)
 
@@ -98,7 +98,7 @@ function Updater:check()
 	self.state = 'pending'
 	self.title = t('Checking for updates') .. '...'
 
-	local url = 'https://api.github.com/repos/tomasklaen/uosc/releases/latest'
+	local url = 'https://api.github.com/repos/drpleaserespect/uosc/releases/latest'
 	local headers = utils.format_json({
 		Accept = 'application/vnd.github+json',
 	})
@@ -180,7 +180,7 @@ function Updater:update()
 	end
 
 	if state.platform == 'windows' then
-		local url = 'https://raw.githubusercontent.com/tomasklaen/uosc/HEAD/installers/windows.ps1'
+		local url = 'https://raw.githubusercontent.com/drpleaserespect/uosc/HEAD/installers/windows.ps1'
 		update({'powershell', '-NoProfile', '-Command', 'irm ' .. url .. ' | iex'})
 	else
 		-- Detect missing dependencies. We can't just let the process run and
@@ -209,7 +209,7 @@ function Updater:update()
 			end
 			handle_result(false, {stderr = stderr})
 		else
-			local url = 'https://raw.githubusercontent.com/tomasklaen/uosc/HEAD/installers/unix.sh'
+			local url = 'https://raw.githubusercontent.com/drpleaserespect/uosc/HEAD/installers/unix.sh'
 			update({'/bin/bash', '-c', 'source <(curl -fsSL ' .. url .. ')'})
 		end
 	end

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-zip_url=https://github.com/tomasklaen/uosc/releases/latest/download/uosc.zip
-conf_url=https://github.com/tomasklaen/uosc/releases/latest/download/uosc.conf
+zip_url=https://github.com/drpleaserespect/uosc/releases/latest/download/uosc.zip
+conf_url=https://github.com/drpleaserespect/uosc/releases/latest/download/uosc.conf
 zip_file=/tmp/uosc.zip
 files=("scripts/uosc" "fonts/uosc_icons.otf" "fonts/uosc_textures.ttf" "scripts/uosc_shared" "scripts/uosc.lua")
 dependencies=(curl unzip)
